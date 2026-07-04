@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VNO.Core/VNO.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VNO.Core.Tests/VNO.Core.Tests.csproj" />
+  </Folder>
+</Solution>
