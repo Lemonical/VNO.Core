@@ -53,6 +53,9 @@ public static class MessageHeaders
             [MessageType.StaffLookupResult] = "LOOKRES",
             [MessageType.StatChange] = "STAT",
             [MessageType.GiveItem] = "ITEM",
+            [MessageType.SceneEffect] = "EFFECT",
+            [MessageType.RoomPolicy] = "POLICY",
+            [MessageType.CheckInventory] = "CHKINV",
             [MessageType.Notice] = "NOTICE",
 
             // Master service auth and listing verbs, ported one to one from the

@@ -213,6 +213,21 @@ public enum MessageType
     GiveItem,
 
     /// <summary>
+    /// Staff command to play a scene effect overlay for everyone in the area
+    /// </summary>
+    SceneEffect,
+
+    /// <summary>
+    /// Staff sets a room policy, argument 0 is the policy key and argument 1 is on or off
+    /// </summary>
+    RoomPolicy,
+
+    /// <summary>
+    /// Staff queries a player inventory, argument 0 is the target and argument 1 the kind
+    /// </summary>
+    CheckInventory,
+
+    /// <summary>
     /// A human readable notice shown to the user
     /// </summary>
     Notice,
