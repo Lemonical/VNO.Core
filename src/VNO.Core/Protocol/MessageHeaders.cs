@@ -79,6 +79,7 @@ public static class MessageHeaders
             [MessageType.AccountInvalid] = "INVCHAR",
             [MessageType.RequestServers] = "RPS",
             [MessageType.ServerEntry] = "SDP",
+            [MessageType.BadgeGrant] = "BDGR",
             [MessageType.RegisterServer] = "RequestPub",
             [MessageType.CheckIp] = "CHIP",
             [MessageType.IpClear] = "OKAY",

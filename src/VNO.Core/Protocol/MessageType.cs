@@ -322,6 +322,12 @@ public enum MessageType
     ServerEntry,
 
     /// <summary>
+    /// Master roster entry pushed at login, argument 0 is a shown name and argument 1 a
+    /// badge id, the client draws that badge next to anyone speaking under that name
+    /// </summary>
+    BadgeGrant,
+
+    /// <summary>
     /// A game server publishes itself to the master so it appears in the list
     /// </summary>
     RegisterServer,

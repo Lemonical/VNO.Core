@@ -27,6 +27,7 @@ public sealed class MasterProtocolTests
     [InlineData(MessageType.AccountInvalid, "INVCHAR")]
     [InlineData(MessageType.RequestServers, "RPS")]
     [InlineData(MessageType.ServerEntry, "SDP")]
+    [InlineData(MessageType.BadgeGrant, "BDGR")]
     [InlineData(MessageType.RegisterServer, "RequestPub")]
     [InlineData(MessageType.CheckIp, "CHIP")]
     [InlineData(MessageType.IpClear, "OKAY")]
@@ -60,5 +61,21 @@ public sealed class MasterProtocolTests
         Assert.Equal("Courtroom", parsed.GetArgument(1));
         Assert.Equal("16789", parsed.GetArgument(3));
         Assert.Equal("no", parsed.GetArgument(6));
+    }
+
+    [Fact]
+    public void Badge_grant_round_trips_the_name_and_badge_id()
+    {
+        // the master pushes one of these per badge holder at login, the client keys the
+        // stage badge on the shown name in argument 0
+        var original = new NetworkMessage(MessageType.BadgeGrant, "Noevain", "champ");
+
+        var wire = MessageCodec.Encode(original);
+        var parsed = MessageCodec.Decode(wire.TrimEnd(ProtocolConstants.MessageTerminator));
+
+        Assert.Equal(MessageType.BadgeGrant, parsed.Type);
+        Assert.Equal("BDGR", parsed.Header);
+        Assert.Equal("Noevain", parsed.GetArgument(0));
+        Assert.Equal("champ", parsed.GetArgument(1));
     }
 }
