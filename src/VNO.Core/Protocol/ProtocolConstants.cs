@@ -43,7 +43,39 @@ public static class ProtocolConstants
     /// <summary>
     /// Largest single message we will accept, guards against runaway buffers
     /// </summary>
+    /// <remarks>
+    /// This is the ceiling used by the legacy TCP framer. The WebSocket path uses the
+    /// tighter, role specific caps below so a small frame cannot force a large buffer
+    /// </remarks>
     public const int MaxMessageBytes = 1024 * 1024;
+
+    /// <summary>
+    /// Default inbound frame cap for auth server traffic, logins and list requests are small
+    /// </summary>
+    /// <remarks>
+    /// A 64 KiB frame of pure delimiters would otherwise allocate tens of thousands of
+    /// empty fields with no command behind it, see the field caps below
+    /// </remarks>
+    public const int MaxAuthMessageBytes = 64 * 1024;
+
+    /// <summary>
+    /// Default inbound frame cap for game server traffic, evidence and animation payloads run larger
+    /// </summary>
+    public const int MaxGameMessageBytes = 256 * 1024;
+
+    /// <summary>
+    /// Largest number of fields a single message may decode into
+    /// </summary>
+    /// <remarks>
+    /// Caps the allocation a decoder does for one frame so a delimiter flood cannot
+    /// turn a small frame into a huge list, see MessageCodec.Decode
+    /// </remarks>
+    public const int MaxFieldCount = 4096;
+
+    /// <summary>
+    /// Largest length in characters a single field may hold
+    /// </summary>
+    public const int MaxFieldLength = 64 * 1024;
 
     /// <summary>
     /// Application version shown on the login screen and reported to the auth server
