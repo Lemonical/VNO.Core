@@ -9,4 +9,12 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 
+  <!-- the WebSocket server transport self hosts Kestrel to serve the HTTP upgrade plus the
+       health and readiness routes App Platform needs. The client transport uses only the BCL
+       ClientWebSocket, so this framework reference costs nothing extra for the desktop apps at
+       run time, only a self contained publish grows -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
 </Project>
