@@ -78,6 +78,40 @@ public static class ProtocolConstants
     public const int MaxFieldLength = 64 * 1024;
 
     /// <summary>
+    /// WebSocket subprotocol advertised on the handshake, the HTTP level version gate
+    /// </summary>
+    /// <remarks>
+    /// The server rejects an upgrade that does not request this token. It is deliberately
+    /// versioned so a future wire format can gate itself at connect time, independent of
+    /// the in band VersionCheck
+    /// </remarks>
+    public const string WebSocketSubprotocol = "vno.v2";
+
+    /// <summary>
+    /// HTTP route the WebSocket upgrade is served on
+    /// </summary>
+    public const string WebSocketPath = "/ws";
+
+    /// <summary>
+    /// Liveness route, returns 200 while the process is up
+    /// </summary>
+    public const string HealthPath = "/health";
+
+    /// <summary>
+    /// Readiness route, returns 200 once the listener is bound and dependencies are reachable
+    /// </summary>
+    public const string ReadyPath = "/ready";
+
+    /// <summary>
+    /// How often the transport sends a WebSocket ping so an idle socket is not culled by an intermediary
+    /// </summary>
+    /// <remarks>
+    /// App Platform and many proxies drop idle connections. This is the frame level keep
+    /// alive, distinct from the semantic application heartbeat
+    /// </remarks>
+    public static readonly System.TimeSpan WebSocketKeepAliveInterval = System.TimeSpan.FromSeconds(20);
+
+    /// <summary>
     /// Application version shown on the login screen and reported to the auth server
     /// </summary>
     /// <remarks>
