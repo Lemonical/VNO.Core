@@ -63,6 +63,11 @@ public sealed class ChatUser
     public bool IsModerator { get; set; }
 
     /// <summary>
+    /// True when the player hid themselves, hidden players are left out of area lists
+    /// </summary>
+    public bool IsHidden { get; set; }
+
+    /// <summary>
     /// When the session connected, in coordinated universal time
     /// </summary>
     public DateTimeOffset ConnectedAt { get; init; } = DateTimeOffset.UtcNow;

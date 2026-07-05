@@ -223,6 +223,11 @@ public enum MessageType
     RoomPolicy,
 
     /// <summary>
+    /// A player asks to hide or show themselves, argument 0 is on or off
+    /// </summary>
+    HideSelf,
+
+    /// <summary>
     /// Staff queries a player inventory, argument 0 is the target and argument 1 the kind
     /// </summary>
     CheckInventory,

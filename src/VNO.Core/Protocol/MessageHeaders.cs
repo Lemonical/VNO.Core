@@ -55,6 +55,7 @@ public static class MessageHeaders
             [MessageType.GiveItem] = "ITEM",
             [MessageType.SceneEffect] = "EFFECT",
             [MessageType.RoomPolicy] = "POLICY",
+            [MessageType.HideSelf] = "HIDE",
             [MessageType.CheckInventory] = "CHKINV",
             [MessageType.Notice] = "NOTICE",
 
