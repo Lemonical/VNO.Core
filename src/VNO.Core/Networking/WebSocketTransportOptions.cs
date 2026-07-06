@@ -49,6 +49,30 @@ public sealed class WebSocketTransportOptions
     public TimeSpan KeepAliveInterval { get; set; } = ProtocolConstants.WebSocketKeepAliveInterval;
 
     /// <summary>
+    /// Negotiate permessage-deflate (RFC 7692) so repetitive list payloads ride compressed
+    /// </summary>
+    /// <remarks>
+    /// The lists we push, music, characters, servers, badges, are repetitive text and
+    /// compress well. Context takeover is deliberately disabled on both sides
+    /// (see <see cref="DisableContextTakeover"/>) so a secret bearing frame such as login
+    /// never shares a compression window with later attacker influenced text, which is the
+    /// CRIME/BREACH class the migration plan calls out. Both peers must agree, so this rides
+    /// the same shared options object
+    /// </remarks>
+    public bool EnablePerMessageDeflate { get; set; } = true;
+
+    /// <summary>
+    /// Compress each message on its own history rather than a shared sliding window
+    /// </summary>
+    /// <remarks>
+    /// No context takeover trades a little ratio for the guarantee that one frame's plaintext
+    /// cannot be probed through another frame's compressed size. Kept on by default because the
+    /// wire carries a login password and the residual ratio on a single repetitive list is
+    /// still good
+    /// </remarks>
+    public bool DisableContextTakeover { get; set; } = true;
+
+    /// <summary>
     /// Reconnect the outgoing link automatically when it drops, client links only
     /// </summary>
     public bool AutoReconnect { get; set; } = true;
