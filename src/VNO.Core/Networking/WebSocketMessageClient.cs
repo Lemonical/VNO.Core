@@ -100,6 +100,16 @@ public sealed class WebSocketMessageClient : IMessageClient
             var socket = new ClientWebSocket();
             socket.Options.AddSubProtocol(_options.Subprotocol);
             socket.Options.KeepAliveInterval = _options.KeepAliveInterval;
+            if (_options.EnablePerMessageDeflate)
+            {
+                // offer permessage-deflate matching the server, no context takeover so a login
+                // frame never shares a compression window with later frames
+                socket.Options.DangerousDeflateOptions = new WebSocketDeflateOptions
+                {
+                    ClientContextTakeover = !_options.DisableContextTakeover,
+                    ServerContextTakeover = !_options.DisableContextTakeover,
+                };
+            }
 
             var uri = BuildUri();
             try
