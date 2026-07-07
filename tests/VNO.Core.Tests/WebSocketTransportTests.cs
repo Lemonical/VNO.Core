@@ -56,6 +56,39 @@ public sealed class WebSocketTransportTests
     }
 
     [Fact]
+    public async Task Large_repetitive_payload_round_trips_under_permessage_deflate()
+    {
+        // permessage-deflate is on by default, a long repetitive list is exactly what it
+        // compresses, this proves the compressed path decodes back byte identical
+        await using var server = new WebSocketMessageServer(NullLoggerFactory.Instance);
+        var connected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        server.SessionConnected += (_, _) => connected.TrySetResult();
+        server.MessageReceived += (_, e) => _ = server.SendToAsync(e.SessionId, e.Message);
+        await server.StartAsync(0);
+
+        await using var client = new WebSocketMessageClient(NullLoggerFactory.Instance.CreateLogger<WebSocketMessageClient>(), ClientOptions());
+        var received = new TaskCompletionSource<NetworkMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        client.MessageReceived += (_, e) => received.TrySetResult(e.Message);
+
+        await client.ConnectAsync("127.0.0.1", server.BoundPort);
+        await connected.Task.WaitAsync(Timeout);
+
+        var args = new string[500];
+        for (var i = 0; i < args.Length; i++)
+        {
+            args[i] = "https://content.example.com/music/track-name.opus";
+        }
+
+        await client.SendAsync(new NetworkMessage(MessageType.MusicList, args));
+
+        var echoed = await received.Task.WaitAsync(Timeout);
+        Assert.Equal(MessageType.MusicList, echoed.Type);
+        Assert.Equal(args.Length, echoed.Arguments.Count);
+        Assert.Equal(args[0], echoed.GetArgument(0));
+        Assert.Equal(args[^1], echoed.GetArgument(args.Length - 1));
+    }
+
+    [Fact]
     public async Task Server_broadcast_reaches_a_connected_client()
     {
         await using var server = new WebSocketMessageServer(NullLoggerFactory.Instance);
