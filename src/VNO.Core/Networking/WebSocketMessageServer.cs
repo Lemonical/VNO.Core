@@ -256,7 +256,16 @@ public sealed class WebSocketMessageServer : IMessageServer
             return;
         }
 
-        using var socket = await context.WebSockets.AcceptWebSocketAsync(_options.Subprotocol).ConfigureAwait(false);
+        var acceptContext = new WebSocketAcceptContext { SubProtocol = _options.Subprotocol };
+        if (_options.EnablePerMessageDeflate)
+        {
+            // repetitive list payloads compress well, no context takeover keeps a login
+            // frame's plaintext out of any later frame's compression history
+            acceptContext.DangerousEnableCompression = true;
+            acceptContext.DisableServerContextTakeover = _options.DisableContextTakeover;
+        }
+
+        using var socket = await context.WebSockets.AcceptWebSocketAsync(acceptContext).ConfigureAwait(false);
         var id = Interlocked.Increment(ref _nextSessionId)
             .ToString(System.Globalization.CultureInfo.InvariantCulture);
 
