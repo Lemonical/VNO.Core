@@ -54,4 +54,20 @@ public sealed class MessageCodecTests
 
         Assert.Equal(string.Empty, message.GetArgument(0));
     }
+
+    [Theory]
+    [InlineData(MessageType.Login)]
+    [InlineData(MessageType.MasterLogin)]
+    [InlineData(MessageType.CreateAccount)]
+    [InlineData(MessageType.ModeratorAuth)]
+    [InlineData(MessageType.GameTokenIssued)]
+    [InlineData(MessageType.GameTokenValidate)]
+    public void Sensitive_message_text_redacts_credentials(MessageType type)
+    {
+        var text = new NetworkMessage(type, "user", "secret").ToString();
+
+        Assert.Contains("<redacted>", text);
+        Assert.DoesNotContain("user", text);
+        Assert.DoesNotContain("secret", text);
+    }
 }

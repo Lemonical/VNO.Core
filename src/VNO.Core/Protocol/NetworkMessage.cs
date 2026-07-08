@@ -57,6 +57,20 @@ public sealed class NetworkMessage
     public static NetworkMessage Create(MessageType type) => new(type);
 
     /// <inheritdoc />
-    public override string ToString() =>
-        Arguments.Count == 0 ? Header : $"{Header}({string.Join(", ", Arguments)})";
+    public override string ToString()
+    {
+        if (Arguments.Count == 0)
+        {
+            return Header;
+        }
+
+        return Type is MessageType.Login
+            or MessageType.MasterLogin
+            or MessageType.CreateAccount
+            or MessageType.ModeratorAuth
+            or MessageType.GameTokenIssued
+            or MessageType.GameTokenValidate
+            ? $"{Header}(<redacted>)"
+            : $"{Header}({string.Join(", ", Arguments)})";
+    }
 }
