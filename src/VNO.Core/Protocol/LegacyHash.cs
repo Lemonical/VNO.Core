@@ -16,7 +16,7 @@ namespace VNO.Core.Protocol;
 public static class LegacyHash
 {
     /// <summary>
-    /// Returns the lowercase hex MD5 digest of the UTF-8 bytes of the text
+    /// Returns the uppercase hex MD5 digest of the UTF-8 bytes of the text
     /// </summary>
     public static string Md5Hex(string text)
     {
@@ -25,6 +25,35 @@ public static class LegacyHash
 #pragma warning disable CA5351
         var digest = MD5.HashData(Encoding.UTF8.GetBytes(text));
 #pragma warning restore CA5351
-        return Convert.ToHexStringLower(digest);
+        return Convert.ToHexString(digest);
+    }
+
+    /// <summary>
+    /// Converts plaintext or an existing MD5 digest to the canonical wire credential
+    /// </summary>
+    public static string ToWireCredential(string passwordOrDigest)
+    {
+        ArgumentNullException.ThrowIfNull(passwordOrDigest);
+        return IsMd5Hex(passwordOrDigest)
+            ? passwordOrDigest.ToUpperInvariant()
+            : Md5Hex(passwordOrDigest);
+    }
+
+    private static bool IsMd5Hex(string value)
+    {
+        if (value.Length != 32)
+        {
+            return false;
+        }
+
+        foreach (var character in value)
+        {
+            if (!Uri.IsHexDigit(character))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
