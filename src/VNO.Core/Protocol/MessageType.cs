@@ -21,7 +21,7 @@ public enum MessageType
     Hello,
 
     /// <summary>
-    /// Login with user name and password
+    /// Game-server login carrying a short-lived single-use Master handoff token
     /// </summary>
     Login,
 
@@ -76,9 +76,24 @@ public enum MessageType
     CharacterList,
 
     /// <summary>
+    /// The authoritative item definitions a server offers, sent on join
+    /// </summary>
+    ItemList,
+
+    /// <summary>
+    /// Batched server join definitions: counted areas, music, and character lists
+    /// </summary>
+    JoinSnapshot,
+
+    /// <summary>
     /// A player claims a roster character, sent from client to server
     /// </summary>
     PickCharacter,
+
+    /// <summary>
+    /// Server confirmation that the requested character was authoritatively claimed
+    /// </summary>
+    CharacterSelected,
 
     /// <summary>
     /// The set of currently claimed characters, broadcast so grids grey them out
@@ -252,7 +267,7 @@ public enum MessageType
     ConnectionPrompt,
 
     /// <summary>
-    /// Master reply that the version check passed, carries the message of the day
+    /// Master reply that the version check passed
     /// </summary>
     VersionAccepted,
 
@@ -297,7 +312,7 @@ public enum MessageType
     MasterLogin,
 
     /// <summary>
-    /// Master reply that login succeeded, carries the account name
+    /// Master reply that login succeeded, carries the account name and message of the day
     /// </summary>
     LoginGranted,
 
@@ -326,6 +341,26 @@ public enum MessageType
     /// badge id, the client draws that badge next to anyone speaking under that name
     /// </summary>
     BadgeGrant,
+
+    /// <summary>
+    /// Authenticated client request for a short-lived game-server handoff credential
+    /// </summary>
+    GameTokenRequest,
+
+    /// <summary>
+    /// Master reply carrying an opaque handoff credential and its Unix expiry time
+    /// </summary>
+    GameTokenIssued,
+
+    /// <summary>
+    /// Authenticated game-server request to consume a handoff credential
+    /// </summary>
+    GameTokenValidate,
+
+    /// <summary>
+    /// Correlated Master reply containing uniform success status and canonical account name
+    /// </summary>
+    GameTokenValidation,
 
     /// <summary>
     /// A game server publishes itself to the master so it appears in the list
