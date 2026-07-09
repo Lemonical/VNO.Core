@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using VNO.Core.Protocol;
 using Xunit;
@@ -48,5 +49,23 @@ public sealed class MessageFramerTests
 
         Assert.Single(messages);
         Assert.Equal("50% done", messages.Single().GetArgument(0));
+    }
+
+    [Fact]
+    public void A_utf8_code_point_split_across_byte_chunks_is_preserved()
+    {
+        const string argument = "court\u2026";
+        var framer = new MessageFramer();
+        var wire = MessageCodec.EncodeBytes(new NetworkMessage(MessageType.Notice, argument));
+        var split = Array.IndexOf(wire, (byte)0xE2) + 1;
+
+        Assert.True(split > 0);
+
+        var first = framer.Append(wire.AsSpan(0, split));
+        var second = framer.Append(wire.AsSpan(split));
+
+        Assert.Empty(first);
+        Assert.Single(second);
+        Assert.Equal(argument, second[0].GetArgument(0));
     }
 }
