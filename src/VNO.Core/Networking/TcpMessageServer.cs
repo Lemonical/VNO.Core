@@ -22,6 +22,7 @@ public sealed class TcpMessageServer : IMessageServer
 {
     private readonly ILogger<TcpMessageServer> _logger;
     private readonly ConcurrentDictionary<string, TcpSession> _sessions = new();
+    private readonly int _maximumMessageBytes;
 
     private TcpListener? _listener;
     private CancellationTokenSource? _acceptCts;
@@ -31,7 +32,13 @@ public sealed class TcpMessageServer : IMessageServer
     /// <summary>
     /// Creates the server with a logger
     /// </summary>
-    public TcpMessageServer(ILogger<TcpMessageServer> logger) => _logger = logger;
+    public TcpMessageServer(
+        ILogger<TcpMessageServer> logger,
+        int maximumMessageBytes = ProtocolConstants.MaxMessageBytes)
+    {
+        _logger = logger;
+        _maximumMessageBytes = maximumMessageBytes;
+    }
 
     /// <inheritdoc />
     public bool IsListening => _listener is not null;
@@ -113,7 +120,15 @@ public sealed class TcpMessageServer : IMessageServer
     {
         foreach (var session in _sessions.Values)
         {
-            await session.SendAsync(message, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await session.SendAsync(message, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(ex, "Dropping slow TCP session {Id}", session.Id);
+                await DisconnectAsync(session.Id).ConfigureAwait(false);
+            }
         }
     }
 
@@ -142,7 +157,7 @@ public sealed class TcpMessageServer : IMessageServer
                 var tcp = await _listener.AcceptTcpClientAsync(cancellationToken).ConfigureAwait(false);
                 var id = Interlocked.Increment(ref _nextSessionId)
                     .ToString(System.Globalization.CultureInfo.InvariantCulture);
-                var session = new TcpSession(id, tcp);
+                var session = new TcpSession(id, tcp, _maximumMessageBytes);
                 session.MessageReceived += OnSessionMessage;
                 session.Closed += OnSessionClosed;
                 _sessions[id] = session;
@@ -171,6 +186,19 @@ public sealed class TcpMessageServer : IMessageServer
         {
             _logger.LogInformation("Session {Id} disconnected", session.Id);
             SessionDisconnected?.Invoke(this, new SessionEventArgs(session.Id, session.RemoteAddress));
+            _ = DisposeClosedSessionAsync(session);
+        }
+    }
+
+    private async Task DisposeClosedSessionAsync(TcpSession session)
+    {
+        try
+        {
+            await session.DisposeAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Disposing closed session {Id} failed", session.Id);
         }
     }
 }
