@@ -87,6 +87,25 @@ public sealed class WebSocketMessageServer : IMessageServer
     /// </remarks>
     public Func<CancellationToken, Task<bool>>? ReadinessProbe { get; set; }
 
+    /// <summary>
+    /// Optionally adds services to the self-hosted HTTP application before it is built
+    /// </summary>
+    /// <remarks>
+    /// Hosts can use this to add HTTP concerns that belong to the application, such as an
+    /// authenticated diagnostics surface, without coupling the shared transport to them.
+    /// The callback runs once for each listener start
+    /// </remarks>
+    public Action<IServiceCollection>? ConfigureServices { get; set; }
+
+    /// <summary>
+    /// Optionally adds middleware and routes to the self-hosted HTTP application
+    /// </summary>
+    /// <remarks>
+    /// The callback runs after WebSocket middleware is enabled and before the transport's
+    /// health, readiness, and protocol routes are mapped
+    /// </remarks>
+    public Action<WebApplication>? ConfigureApplication { get; set; }
+
     /// <inheritdoc />
     public async Task StartAsync(int port, CancellationToken cancellationToken = default)
     {
@@ -101,9 +120,11 @@ public sealed class WebSocketMessageServer : IMessageServer
         // reuse the host logging rather than standing up a second logger stack
         builder.Logging.ClearProviders();
         builder.Services.AddSingleton(_loggerFactory);
+        ConfigureServices?.Invoke(builder.Services);
 
         var app = builder.Build();
         app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = _options.KeepAliveInterval });
+        ConfigureApplication?.Invoke(app);
 
         app.MapGet(ProtocolConstants.HealthPath, () => Results.Ok("ok"));
         app.MapGet(ProtocolConstants.ReadyPath, (CancellationToken ct) => HandleReadinessAsync(ct));
