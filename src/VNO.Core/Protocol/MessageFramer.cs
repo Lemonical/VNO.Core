@@ -64,14 +64,9 @@ public sealed class MessageFramer
         var messages = new List<NetworkMessage>();
         foreach (var character in text)
         {
-            if (_pending.Length > _maximumMessageCharacters)
-            {
-                throw new InvalidOperationException("Incoming message exceeded the size limit");
-            }
-
             if (_escaping)
             {
-                _pending.Append(character);
+                AppendPending(character);
                 _escaping = false;
                 continue;
             }
@@ -94,9 +89,19 @@ public sealed class MessageFramer
                 continue;
             }
 
-            _pending.Append(character);
+            AppendPending(character);
         }
 
         return messages;
+    }
+
+    private void AppendPending(char character)
+    {
+        if (_pending.Length >= _maximumMessageCharacters)
+        {
+            throw new InvalidOperationException("Incoming message exceeded the size limit");
+        }
+
+        _pending.Append(character);
     }
 }

@@ -36,6 +36,7 @@ public sealed class TcpMessageServer : IMessageServer
         ILogger<TcpMessageServer> logger,
         int maximumMessageBytes = ProtocolConstants.MaxMessageBytes)
     {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maximumMessageBytes);
         _logger = logger;
         _maximumMessageBytes = maximumMessageBytes;
     }

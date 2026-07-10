@@ -68,4 +68,13 @@ public sealed class MessageFramerTests
         Assert.Single(second);
         Assert.Equal(argument, second[0].GetArgument(0));
     }
+
+    [Fact]
+    public void An_oversized_pending_message_is_rejected_immediately()
+    {
+        var framer = new MessageFramer(4);
+
+        Assert.Empty(framer.Append("ABCD"));
+        Assert.Throws<InvalidOperationException>(() => framer.Append("E"));
+    }
 }
