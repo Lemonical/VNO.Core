@@ -368,6 +368,11 @@ public enum MessageType
     RegisterServer,
 
     /// <summary>
+    /// An authenticated game server reports its current online count and capacity.
+    /// </summary>
+    ServerMetrics,
+
+    /// <summary>
     /// A game server asks the master to resolve and ban check an address
     /// </summary>
     CheckIp,

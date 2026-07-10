@@ -88,6 +88,7 @@ public static class MessageHeaders
             [MessageType.GameTokenValidate] = "GTVAL",
             [MessageType.GameTokenValidation] = "GTRES",
             [MessageType.RegisterServer] = "RequestPub",
+            [MessageType.ServerMetrics] = "SRVMETRICS",
             [MessageType.CheckIp] = "CHIP",
             [MessageType.IpClear] = "OKAY",
             [MessageType.IpBanned] = "SUBAN",
