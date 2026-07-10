@@ -36,11 +36,6 @@ public static class ProtocolConstants
     public const int LegacyServerListenPort = 6541;
 
     /// <summary>
-    /// TCP port of the central auth and listing service
-    /// </summary>
-    public const int AuthServerPort = 6543;
-
-    /// <summary>
     /// Largest single message we will accept, guards against runaway buffers
     /// </summary>
     /// <remarks>
@@ -112,11 +107,11 @@ public static class ProtocolConstants
     public static readonly System.TimeSpan WebSocketKeepAliveInterval = System.TimeSpan.FromSeconds(20);
 
     /// <summary>
-    /// Application version shown on the login screen and reported to the auth server
+    /// Application version reported by both Client and Server and accepted by Master
     /// </summary>
     /// <remarks>
-    /// The legacy client drew this in label_version on groupbox_login. Kept here so
-    /// the client and server agree on one value instead of a magic string in a view
+    /// This is distinct from <see cref="WebSocketSubprotocol"/>, which versions the
+    /// WebSocket wire format. Every application compatibility check uses this value.
     /// </remarks>
-    public const string ClientVersion = "1.0";
+    public const string ApplicationVersion = "1.0";
 }
