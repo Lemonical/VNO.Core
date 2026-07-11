@@ -1,87 +1,55 @@
 # Contributing to VNO.Core
 
-`VNO.Core` is the shared protocol, networking and model library used by the Visual Novel Online stack. Changes here can affect `VNO.Client`, `VNO.Server` and `VNO.Master`, so compatibility, clarity and test coverage matter more than speed.
-
-## Prerequisites
-
-- .NET 10 SDK
+Core changes can affect every VNO process. Favor compatibility, bounded behavior, explicit contracts and focused tests over convenience for one consumer.
 
 ## Setup
-
-Clone and restore the repository:
 
 ```bash
 git clone https://github.com/Lemonical/VNO.Core.git
 cd VNO.Core
 dotnet restore VNO.Core.slnx
-```
-
-## Development Notes
-
-When making changes, please keep the following in mind:
-
-- Treat wire protocol changes as cross-repository changes, not local refactors.
-- Keep message types, codecs, framers and transport behaviour backward-compatible unless the change intentionally updates the contract.
-- Keep shared models stable and predictable.
-- Avoid mixing protocol changes with unrelated cleanup.
-- Prefer small, focused changes that are easier to review.
-- Add comments for non-obvious protocol, framing or transport logic.
-- Add or update tests whenever message shapes, framing rules, escaping rules, hash behaviour or shared model behaviour change.
-
-## Testing
-
-Run the full test suite before opening a pull request:
-
-```bash
+dotnet build VNO.Core.slnx
 dotnet test VNO.Core.slnx
 ```
 
-Add or update tests when changing:
+The only prerequisite is the .NET 10 SDK. Transport integration tests may bind local loopback ports.
 
-- Protocol constants
-- Message types
-- Message encoding or decoding
-- Message escaping
-- Message framing
-- TCP transport behaviour
-- Shared hash behaviour
-- Player stat rules
-- Replay parsing
-- Master Server protocol message shapes
-- Shared models consumed by other `VNO.*` repositories
+## Change guidelines
 
-## Pull Requests
+- Treat message types, delimiters, escaping, framing, limits, paths, and subprotocols as public contracts.
+- Preserve wire compatibility unless a coordinated version transition is intentional and documented.
+- Keep models deterministic and avoid application-specific behavior in Core.
+- Bound untrusted messages, queues, and resource use; validate at protocol boundaries.
+- Preserve UTF-8 decoder state across stream reads and do not assume one read equals one message.
+- Propagate cancellation and avoid blocking asynchronous I/O.
+- Keep TCP and WebSocket behavior equivalent where their transport semantics allow it.
+- Do not add application UI, persistence, or deployment policy to this library.
 
-Before opening a pull request, make sure that:
+## Testing
 
-- The project builds successfully.
-- The test suite passes.
-- Protocol or model changes are documented.
-- The pull request explains the compatibility impact clearly.
-- Any affected downstream repositories are called out.
+Run `dotnet test VNO.Core.slnx` and add focused tests for any change to:
 
-Please mention whether corresponding changes are needed in:
+- Protocol constants, message kinds, encoding, decoding, or escaping
+- Incremental framing, partial UTF-8, multiple messages, or malformed input
+- TCP/WebSocket connection, health/readiness, TLS options, backpressure, or cancellation
+- Authentication/game message limits and rejection paths
+- Hashing or shared model behavior
+- Existing Client, Master, and Server message shapes
 
-- `VNO.Client`
-- `VNO.Server`
-- `VNO.Master` (private)
+Where practical, verify the corresponding application suites against the updated submodule revision.
 
-Keep protocol contract changes explicit. If a change intentionally breaks compatibility, explain why the break is necessary and which repositories need to be updated with it.
+## Compatibility and documentation
 
-## Issues
+Describe affected messages, old/new behavior, rollout order, and downstream changes in the pull request. A breaking change must identify required updates to VNO.Client, VNO.Master, and VNO.Server.
 
-Use GitHub issues to report bugs, protocol design concerns or shared model problems.
+Keep the README concise. Put the full protocol reference, transport guides, compatibility policy, and examples in the VNO.Core GitHub wiki once it is enabled. Update canonical docs here; do not hand-edit copies in an application's `external/VNO.Core` working tree.
 
-When reporting a bug, please include:
+## Pull requests and issues
 
-- What you expected to happen
-- What actually happened
-- Steps to reproduce the issue
-- Relevant logs or test output, if available
-- Your operating system
-- Your .NET SDK version
-- Any affected downstream repository, if known
+Pull requests must build, pass tests, include contract tests, explain compatibility impact, and avoid unrelated cleanup. Do not include captured credentials, bearer tokens, private addresses, or sensitive message payloads.
+
+Bug reports should include a minimal reproduction, expected and actual framing/transport behavior, .NET SDK and OS, affected application revisions, and sanitized logs.
 
 ## License
 
-By contributing to this repository, you agree that your contributions will be licensed under the MIT License that covers this project.
+By contributing, you agree that your contribution is licensed under this project's [MIT License](LICENSE).

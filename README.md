@@ -1,113 +1,96 @@
-# Visual Novel Online Core
+<p align="center">
+  <img src="docs/assets/vno-icon.png" width="96" alt="Visual Novel Online icon">
+</p>
 
-Shared protocol, networking and model library for the Visual Novel Online stack, built with .NET 10.
+<h1 align="center">Visual Novel Online Core</h1>
 
-## Overview
+<p align="center">Shared protocol, models, framing, and network transports for the VNO stack.</p>
 
-`VNO.Core` contains the shared protocol and networking foundation used by the Visual Novel Online client, game server and Master Server.
+<p align="center">
+  <a href="https://dotnet.microsoft.com/"><img alt=".NET 10" src="https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white"></a>
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/github/license/Lemonical/VNO.Core"></a>
+  <a href="https://github.com/Lemonical/VNO.Core/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/Lemonical/VNO.Core/main"></a>
+  <a href="https://github.com/Lemonical/VNO.Core/issues"><img alt="Open issues" src="https://img.shields.io/github/issues/Lemonical/VNO.Core"></a>
+</p>
 
-It defines the common contract for:
+`VNO.Core` defines the cross-process contract used by Client, Master, and Server. It contains the human-readable message protocol, escaping and streaming framing, shared models, and interchangeable TCP and WebSocket transports.
 
-- Wire-level protocol constants
-- Message headers and strongly typed message kinds
-- Message encoding, escaping and framing
-- TCP client and TCP server abstractions
-- Shared models such as server listings, player stats, bans and music tracks
-
-The other `VNO.*` repositories consume this library as a Git submodule so protocol changes remain explicit, reviewable and easy to coordinate across the stack.
-
-## Project Status
-
-This project is currently under active development. It is the shared foundation for the VNO rewrite, so changes here are expected to remain conservative because they can affect every other `VNO.*` repository.
+> [!IMPORTANT]
+> Core is under active development. It is consumed as a Git submodule by the VNO applications and is not currently published as a NuGet package. Protocol changes must be coordinated across every affected repository.
 
 ## Features
 
-Current features include:
+- Stable protocol constants, typed message kinds, encoding, escaping, and decoding
+- Stateful stream framing that safely reconstructs messages across arbitrary network reads
+- TCP client/server implementations
+- WebSocket/WSS client and Kestrel-hosted server implementations
+- WebSocket upgrade, health, readiness, subprotocol, keepalive, queue, and size-limit support
+- Shared server-listing, player-stat, ban, music, and other protocol models
+- Separate bounded message limits for authentication and gameplay traffic
+- Tests for codecs, framing, transports, hashes, models, and compatibility behavior
 
-- Human-readable text protocol with stable message delimiters and escaping
-- Streaming message framer for reconstructing complete messages from arbitrary TCP chunks
-- Shared `NetworkMessage` model
-- Shared `MessageType` enum for protocol-safe routing
-- Reusable TCP transport implementations for client and server roles
-- Shared models for server listings, player stats, bans and music tracks
-- Protocol and transport tests covering encoding, framing, hashing and shared model behaviour
+## Quick start
 
-## Requirements
+### Requirements
 
-- .NET 10 SDK
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
 
-## Installation
-
-Clone and restore the repository:
+### Install, build, and test
 
 ```bash
 git clone https://github.com/Lemonical/VNO.Core.git
 cd VNO.Core
 dotnet restore VNO.Core.slnx
+dotnet build VNO.Core.slnx
+dotnet test VNO.Core.slnx
 ```
 
-If you want to consume the library from another local repository, reference the project directly:
+VNO applications normally consume Core as a submodule and project reference. For another local project:
 
 ```xml
 <ProjectReference Include="path/to/VNO.Core.csproj" />
 ```
 
-Most VNO repositories consume `VNO.Core` as a Git submodule instead of a direct package dependency. This keeps protocol changes visible in pull requests.
-
-## Usage
-
-The core library is intentionally small and low-level.
-
-A typical message encoding and decoding flow looks like this:
+## Minimal usage
 
 ```csharp
 using VNO.Core.Protocol;
 
 var outbound = new NetworkMessage(MessageType.InCharacter, "Phoenix", "Objection!");
 var wireText = MessageCodec.Encode(outbound);
-var parsed = MessageCodec.Decode(wireText.TrimEnd(ProtocolConstants.MessageTerminator));
+var parsed = MessageCodec.Decode(
+    wireText.TrimEnd(ProtocolConstants.MessageTerminator));
 ```
 
-For TCP streams that arrive in chunks, use `MessageFramer`:
+Use `MessageFramer` for bytes arriving in arbitrary chunks:
 
 ```csharp
-using VNO.Core.Protocol;
-
 var framer = new MessageFramer();
 var messages = framer.Append(receivedBytes);
 ```
 
-## Testing
+The complete protocol, framing, TCP/WebSocket, compatibility and transport-configuration guides belong in the VNO.Core GitHub wiki once it is enabled.
 
-Run the test suite:
+## Build and publish
 
 ```bash
+dotnet build VNO.Core.slnx -c Release
 dotnet test VNO.Core.slnx
+dotnet publish src/VNO.Core/VNO.Core.csproj -c Release -o ./publish/core
 ```
 
-The tests cover message encoding, message framing, shared hash behaviour, player stat rules, replay parsing and Master Server protocol message shapes.
+The publish command creates framework-dependent output for local use; it does not create a supported package.
 
-## Related Repositories
+## Consumers
 
-- [`VNO.Client`](https://github.com/Lemonical/VNO.Client): desktop player client
-- [`VNO.Server`](https://github.com/Lemonical/VNO.Server): game server and staff control surface
+- [VNO.Client](https://github.com/Lemonical/VNO.Client) - desktop player
+- [VNO.Master](https://github.com/Lemonical/VNO.Master) - authentication and server directory
+- [VNO.Server](https://github.com/Lemonical/VNO.Server) - game host and administration
 
 ## Contributing
 
-Because this repository defines cross-process contracts, even small changes can affect the rest of the VNO stack.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing a contract change. Use the [issue tracker](https://github.com/Lemonical/VNO.Core/issues) for protocol and transport problems; identify every known downstream consumer and never post credentials or sensitive traffic captures.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for workflow and compatibility expectations.
+## License
 
-Before opening a pull request:
-
-```bash
-dotnet test VNO.Core.slnx
-```
-
-If you add or change a message type, update both the implementation and the matching tests in the same change.
-
-If the change requires updates in `VNO.Client`, `VNO.Server` or `VNO.Master`, mention those downstream changes in the pull request.
-
-## Support
-
-Use the [GitHub issue tracker](https://github.com/Lemonical/VNO.Core/issues) for bugs, protocol design discussions and shared model concerns.
+VNO.Core is licensed under the [MIT License](LICENSE).
